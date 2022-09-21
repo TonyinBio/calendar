@@ -19,6 +19,6 @@ const db = {}
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
-db.calendar = require("./calendar.model.js")(sequelize, Sequelize)
+db.events = require("./calendar.model.js")(sequelize, Sequelize)
 
 module.exports = db

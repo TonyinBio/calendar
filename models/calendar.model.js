@@ -1,5 +1,5 @@
 module.exports = (sequelize, Sequelize) => {
-    const Calendar = sequelize.define("calendar", {
+    const Events = sequelize.define("event", {
         title: {
             type: Sequelize.STRING
         },
@@ -17,6 +17,6 @@ module.exports = (sequelize, Sequelize) => {
         }
     })
 
-    return Calendar
+    return Events
 }
 
