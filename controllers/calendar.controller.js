@@ -44,7 +44,7 @@ exports.createEvent = (req, res) => {
 		checkout: req.body.checkout,
 		checkin: req.body.checkin,
 		presenters: req.body.presenters,
-        demoId: req.body.demoId
+		demoId: req.body.demoId,
 	};
 
 	// Save an event in the db
@@ -70,17 +70,17 @@ exports.findAll = (req, res) => {
 		})
 		.catch((err) => {
 			res.status(500).send({
-				message:
-					err.message || "Some error occurred while retrieving demos.",
+				message: err.message || "Some error occurred while retrieving demos.",
 			});
 		});
 };
 
 // Retrieve (all) demos by title, include events, don't include unavailable
 exports.findAllAvailable = (req, res) => {
-    const title = req.query.title;
-    // Problem?
-    let condition = title ? { title: { [Op.like]: `%${title}%` }, available: true } : {available: true}};
+	const title = req.query.title;
+	let condition = title
+		? { title: { [Op.like]: `%${title}%` }, available: true }
+		: { available: true };
 
 	Demo.findAll({ where: condition, include: ["events"] })
 		.then((demos) => {
@@ -88,11 +88,10 @@ exports.findAllAvailable = (req, res) => {
 		})
 		.catch((err) => {
 			res.status(500).send({
-				message:
-					err.message || "Some error occurred while retrieving demos.",
+				message: err.message || "Some error occurred while retrieving demos.",
 			});
 		});
-}
+};
 
 // *NOT NEEDED* find a single Demo with an id, include events.
 
@@ -217,19 +216,19 @@ exports.deleteEvent = (req, res) => {
 		});
 };
 
-// Delete all demos from the database. 
+// Delete all demos from the database.
 // **Will this delete events as well?
 exports.deleteAll = (req, res) => {
-    Demo.destroy({
-        where: {},
-        truncate: false
-    })
-        .then(nums => {
-            res.send({ message: `${nums} Demos were deleted successfully!`})
-        })
-        .catch(err => {
-            res.status(500).send({
-                message: err.message || "Some error occured while removing all demos."
-            })
-        })
+	Demo.destroy({
+		where: {},
+		truncate: false,
+	})
+		.then((nums) => {
+			res.send({ message: `${nums} Demos were deleted successfully!` });
+		})
+		.catch((err) => {
+			res.status(500).send({
+				message: err.message || "Some error occured while removing all demos.",
+			});
+		});
 };
