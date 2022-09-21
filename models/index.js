@@ -19,6 +19,14 @@ const db = {}
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
-db.events = require("./calendar.model.js")(sequelize, Sequelize)
+db.demos = require("./demo.model.js")(sequelize, Sequelize)
+db.events = require("./event.model.js")(sequelize, Sequelize)
+
+// ** WILL EVENTUALLY NEED TABLE OF PARTNERS
+db.demos.hasMany(db.events, {as: "events"})
+db.events.belongsTo(db.demos, {
+    foreignKey: "demoId",
+    as: "demo"
+})
 
 module.exports = db

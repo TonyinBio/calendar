@@ -1,84 +1,235 @@
 const db = require("../models");
-const Events = db.events;
+const Demo = db.demos;
+const Event = db.events;
 const Op = db.Sequelize.Op;
 
-// Create and Save a new calendar Event
-exports.create = (req, res) => {
+// Create and Save a new demo
+exports.createDemo = (req, res) => {
 	if (!req.body.title) {
 		res.status(400).send({
-			message: "Content can be empty!",
+			message: "Content cannot be empty!",
 		});
 		return;
 	}
 
-	// Create a calendar event
-	const event = {
+	// Create a demo
+	const demo = {
 		title: req.body.title,
-		demotype: req.body.demotype,
-		presenters: req.body.presenters,
-
-		checkout: req.body.checkout,
-		checkin: req.body.checkin,
+		available: req.body.available ? req.body.available : false,
 	};
 
-	// Save event in the db
-	Events.create(event)
-		.then((data) => {
-			res.send(data);
+	// Save demo in the db
+	Demo.create(demo)
+		.then((savedDemo) => {
+			res.send(savedDemo);
 		})
 		.catch((err) => {
 			res.status(500).send({
-				message: err.message || "Some error occurred while creating the Event",
+				message: err.message || "Some error occurred while creating the Demo",
 			});
 		});
 };
 
-// Retrieve all Calendar Events from the database.
+// Create and Save a new event
+exports.createEvent = (req, res) => {
+	if (!req.body.checkout) {
+		res.status(400).send({
+			message: "Content cannot be empty!",
+		});
+		return;
+	}
+
+	// Create an event
+	const event = {
+		checkout: req.body.checkout,
+		checkin: req.body.checkin,
+		presenters: req.body.presenters,
+        demoId: req.body.demoId
+	};
+
+	// Save an event in the db
+	Event.create(event)
+		.then((savedEvent) => {
+			res.send(savedEvent);
+		})
+		.catch((err) => {
+			res.status(500).send({
+				message: err.message || "Some error occured while creating the Event",
+			});
+		});
+};
+
+// Retrieve (all) demos by title, include events.
 exports.findAll = (req, res) => {
 	const title = req.query.title;
 	let condition = title ? { title: { [Op.like]: `%${title}%` } } : null;
 
-	Events.findAll({ where: condition })
-		.then((data) => {
-			res.send(data);
+	Demo.findAll({ where: condition, include: ["events"] })
+		.then((demos) => {
+			res.send(demos);
 		})
 		.catch((err) => {
 			res.status(500).send({
 				message:
-					err.message || "Some error occurred while retrieving tutorials.",
+					err.message || "Some error occurred while retrieving demos.",
 			});
 		});
 };
 
-// Find a single Calendar Event with an id
-exports.findOne = (req, res) => {
-    const id = req.params.id
+// Retrieve (all) demos by title, include events, don't include unavailable
+exports.findAllAvailable = (req, res) => {
+    const title = req.query.title;
+    // Problem?
+    let condition = title ? { title: { [Op.like]: `%${title}%` }, available: true } : {available: true}};
 
-    Events.findByPk(id)
-        .then(data => {
-            if (data) {
-                res.send(data)
-            } else {
-                res.status(404).send({
-                    message: `Cannot find event with id=${id}.`
-                })
-            }
+	Demo.findAll({ where: condition, include: ["events"] })
+		.then((demos) => {
+			res.send(demos);
+		})
+		.catch((err) => {
+			res.status(500).send({
+				message:
+					err.message || "Some error occurred while retrieving demos.",
+			});
+		});
+}
+
+// *NOT NEEDED* find a single Demo with an id, include events.
+
+// *NOT NEEDED* Find a single Event with an id
+// exports.findOne = (req, res) => {
+// 	const id = req.params.id;
+
+// 	Events.findByPk(id)
+// 		.then((data) => {
+// 			if (data) {
+// 				res.send(data);
+// 			} else {
+// 				res.status(404).send({
+// 					message: `Cannot find event with id=${id}.`,
+// 				});
+// 			}
+// 		})
+// 		.catch((err) => {
+// 			res.status(500).send({
+// 				message: `Error retrieving event with id=${id}`,
+// 			});
+// 		});
+// };
+
+// Update a demo by the id in the request
+exports.updateDemo = (req, res) => {
+	const id = req.params.id;
+
+	Demo.update(req.body, {
+		where: { id: id },
+	})
+		.then((num) => {
+			if (num == 1) {
+				res.send({
+					message: "Demo was updated successfully.",
+				});
+			} else {
+				res.send({
+					message: `Cannot update Demo with id=${id}. Maybe Demo was not found or req.body is empty!`,
+				});
+			}
+		})
+		.catch((err) => {
+			res.status(500).send({
+				message: `Error updating Demo with id=${id}`,
+			});
+		});
+};
+
+// Update an event by the id in the request
+exports.updateEvent = (req, res) => {
+	const id = req.params.id;
+
+	Event.update(req.body, {
+		where: { id: id },
+	})
+		.then((num) => {
+			if (num == 1) {
+				res.send({
+					message: "Event was updated successfully.",
+				});
+			} else {
+				res.send({
+					message: `Cannot update Event with id=${id}. Maybe Event was not found or req.body is empty!`,
+				});
+			}
+		})
+		.catch((err) => {
+			res.status(500).send({
+				message: `Error updating Event with id=${id}`,
+			});
+		});
+};
+
+// Delete a demo with the specified id in the request
+exports.deleteDemo = (req, res) => {
+	const id = req.params.id;
+
+	Demo.destroy({
+		where: { id: id },
+	})
+		.then((num) => {
+			if (num == 1) {
+				res.send({
+					message: "Demo was deleted successfully!",
+				});
+			} else {
+				res.send({
+					message: `Cannot delete Demo with id=${id}. Maybe Demo was not found!`,
+				});
+			}
+		})
+		.catch((err) => {
+			res.status(500).send({
+				message: `Could not delete Demo with id=${id}`,
+			});
+		});
+};
+
+// Delete an event with the specified id in the request
+exports.deleteEvent = (req, res) => {
+	const id = req.params.id;
+
+	Event.destroy({
+		where: { id: id },
+	})
+		.then((num) => {
+			if (num == 1) {
+				res.send({
+					message: "Event was deleted successfully!",
+				});
+			} else {
+				res.send({
+					message: `Cannot delete Event with id=${id}. Maybe Event was not found!`,
+				});
+			}
+		})
+		.catch((err) => {
+			res.status(500).send({
+				message: `Could not delete Event with id=${id}`,
+			});
+		});
+};
+
+// Delete all demos from the database. 
+// **Will this delete events as well?
+exports.deleteAll = (req, res) => {
+    Demo.destroy({
+        where: {},
+        truncate: false
+    })
+        .then(nums => {
+            res.send({ message: `${nums} Demos were deleted successfully!`})
         })
         .catch(err => {
             res.status(500).send({
-                message: `Error retrieving event with id=${id}`
+                message: err.message || "Some error occured while removing all demos."
             })
         })
 };
-
-// Update a Calendar Event by the id in the request
-exports.update = (req, res) => {};
-
-// Delete a Calendar Event with the specified id in the request
-exports.delete = (req, res) => {};
-
-// Delete all Calendar Events from the database.
-exports.deleteAll = (req, res) => {};
-
-// Find all Calendar Events of a demotype
-exports.findAllPublished = (req, res) => {};
