@@ -62,8 +62,8 @@ exports.createEvent = (req, res) => {
 // Retrieve (all) demos by title, include events.
 exports.findAll = (req, res) => {
 	const title = req.query.title;
-	let condition = title ? { title: { [Op.like]: `%${title}%` } } : null;
-
+	const condition = title ? { title: { [Op.like]: `%${title}%` } } : null;
+	
 	Demo.findAll({ where: condition, include: ["events"] })
 		.then((demos) => {
 			res.send(demos);
@@ -78,7 +78,7 @@ exports.findAll = (req, res) => {
 // Retrieve (all) demos by title, include events, don't include unavailable
 exports.findAllAvailable = (req, res) => {
 	const title = req.query.title;
-	let condition = title
+	const condition = title
 		? { title: { [Op.like]: `%${title}%` }, available: true }
 		: { available: true };
 
@@ -95,26 +95,26 @@ exports.findAllAvailable = (req, res) => {
 
 // *NOT NEEDED* find a single Demo with an id, include events.
 
-// *NOT NEEDED* Find a single Event with an id
-// exports.findOne = (req, res) => {
-// 	const id = req.params.id;
+// Find a single Event with an id
+exports.findOneEvent = (req, res) => {
+	const id = req.params.id;
 
-// 	Events.findByPk(id)
-// 		.then((data) => {
-// 			if (data) {
-// 				res.send(data);
-// 			} else {
-// 				res.status(404).send({
-// 					message: `Cannot find event with id=${id}.`,
-// 				});
-// 			}
-// 		})
-// 		.catch((err) => {
-// 			res.status(500).send({
-// 				message: `Error retrieving event with id=${id}`,
-// 			});
-// 		});
-// };
+	Event.findByPk(id)
+		.then((event) => {
+			if (event) {
+				res.send(event);
+			} else {
+				res.status(404).send({
+					message: `Cannot find event with id=${id}.`,
+				});
+			}
+		})
+		.catch((err) => {
+			res.status(500).send({
+				message: `Error retrieving event with id=${id}`,
+			});
+		});
+};
 
 // Update a demo by the id in the request
 exports.updateDemo = (req, res) => {

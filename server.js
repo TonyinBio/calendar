@@ -6,18 +6,20 @@ const logger = require("morgan");
 const cors = require("cors");
 
 const db = require("./app/models")
-db.sequelize.sync({ force: true }).then(() => {
-  console.log("Drop and re-sync db.");
-});
+// db.sequelize.sync({ force: true }).then(() => {
+//   console.log("Drop and re-sync db.");
+// });
+db.sequelize.sync()
 
 app.use(logger("dev"));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
-app.get("/api/test", (req, res) => {
-  res.send("test");
-});
+demoRouter = require("./app/routes/demo.routes.js")
+eventRouter = require("./app/routes/event.routes.js")
+demoRouter(app)
+eventRouter(app)
 
 app.use(express.static(path.join(__dirname, "./frontend/build")));
 
@@ -32,7 +34,7 @@ app.get("*", function (_, res) {
   );
 });
 
-const port = process.env.PORT || 5001;
+const port = process.env.PORT || 8080;
 app.listen(port, () => console.log(`Server Running on port ${port}`));
 
 module.exports = app;
