@@ -4,6 +4,7 @@ const Sequelize = require("sequelize");
 const sequelize = new Sequelize("mysql://root:fhDTTKRBL0RgaEKFeCfb@containers-us-west-73.railway.app:6572/railway", {
   host: dbConfig.HOST,
   dialect: dbConfig.dialect,
+  dialectModule: require("mysql2"),
   operatorsAliases: false,
 
   pool: {
