@@ -21,6 +21,12 @@ eventRouter = require("./app/routes/event.routes.js")
 demoRouter(app)
 eventRouter(app)
 
+const filePath = path.join(__dirname, "./frontend/build")
+console.log(path.resolve(filePath))
+
+const filePathTwo = path.join(__dirname, "./frontend/build/index.html")
+console.log(path.resolve(filePathTwo))
+
 app.use(express.static(path.join(__dirname, "./frontend/build")));
 
 app.get("*", function (_, res) {
@@ -37,4 +43,4 @@ app.get("*", function (_, res) {
 const port = process.env.PORT || 8080;
 app.listen(port, () => console.log(`Server Running on port ${port}`));
 
-module.exports = app;
+export default app;
