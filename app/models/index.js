@@ -1,8 +1,7 @@
 const dbConfig = require("../config/db.config.js");
-
 const Sequelize = require("sequelize");
-const sequelize = new Sequelize("mysql://root:fhDTTKRBL0RgaEKFeCfb@containers-us-west-73.railway.app:6572/railway", {
-  host: dbConfig.HOST,
+const sequelize = new Sequelize(dbConfig.URL, {
+  // host: dbConfig.HOST,
   dialect: dbConfig.dialect,
   dialectModule: require("mysql2"),
   operatorsAliases: false,
@@ -26,7 +25,7 @@ db.events = require("./event.model.js")(sequelize, Sequelize)
 // ** WILL EVENTUALLY NEED TABLE OF PARTNERS
 db.demos.hasMany(db.events, {as: "events"})
 db.events.belongsTo(db.demos, {
-    foreignKey: "demoId",
+    foreignKey: { name: "demoId", allowNull: false },
     as: "demo"
 })
 

@@ -6,26 +6,34 @@ import React, {
 } from "react";
 import GlobalContext from "./GlobalContext";
 import dayjs from "dayjs";
+import CalendarDataService from "../services/calendar.service"
 
 function savedEventsReducer(state, { type, payload }) {
   switch (type) {
     case "push":
+      CalendarDataService.createEvent(payload)
       return [...state, payload];
     case "update":
+      CalendarDataService.updateEvent(payload)
       return state.map((evt) =>
         evt.id === payload.id ? payload : evt
       );
     case "delete":
+      CalendarDataService.deleteEvent(payload.id)
       return state.filter((evt) => evt.id !== payload.id);
+    case "load": 
+      return payload
     default:
       throw new Error();
   }
 }
-function initEvents() {
-  const storageEvents = localStorage.getItem("savedEvents");
-  const parsedEvents = storageEvents ? JSON.parse(storageEvents) : [];
-  return parsedEvents;
-}
+// function initEvents() {
+//   return CalendarDataService.getEvents()
+//     .then(res => {
+//       return res.data
+//     })
+//     .catch(e => {console.log(e)});
+// }
 
 export default function ContextWrapper(props) {
   const [monthIndex, setMonthIndex] = useState(dayjs().month());
@@ -34,28 +42,51 @@ export default function ContextWrapper(props) {
   const [showEventModal, setShowEventModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [labels, setLabels] = useState([]);
+  const [demos, setDemos] = useState([])
   const [savedEvents, dispatchCalEvent] = useReducer(
     savedEventsReducer,
     [],
-    initEvents
+    // initEvents
   );
 
+  // Load Events
+  useEffect(() => {
+    CalendarDataService.getEvents()
+      .then(res => {
+        dispatchCalEvent({
+          type: "load",
+          payload: res.data
+        })
+      })
+  }, [])
+
+  // Get events with labels checked
   const filteredEvents = useMemo(() => {
     return savedEvents.filter((evt) =>
       labels
         .filter((lbl) => lbl.checked)
         .map((lbl) => lbl.label)
-        .includes(evt.label)
+        .includes(evt.demo.title)
     );
   }, [savedEvents, labels]);
 
+  // Load demos
   useEffect(() => {
-    localStorage.setItem("savedEvents", JSON.stringify(savedEvents));
-  }, [savedEvents]);
+    CalendarDataService.getAvailableDemos("")
+    .then(res => {
+      setDemos(res.data)
+    })
+    .catch(e => console.log(e))
+  }, [])
 
+  // useEffect(() => {
+  //   localStorage.setItem("savedEvents", JSON.stringify(savedEvents));
+  // }, [savedEvents]);
+
+  // Create labels
   useEffect(() => {
     setLabels((prevLabels) => {
-      return [...new Set(savedEvents.map((evt) => evt.label))].map(
+      return [...new Set(savedEvents.map((evt) => evt.demo.title))].map(
         (label) => {
           const currentLabel = prevLabels.find(
             (lbl) => lbl.label === label
@@ -81,6 +112,7 @@ export default function ContextWrapper(props) {
     }
   }, [showEventModal]);
 
+  // NEED TO UPDATE
   function updateLabel(label) {
     setLabels(
       labels.map((lbl) => (lbl.label === label.label ? label : lbl))
@@ -106,6 +138,7 @@ export default function ContextWrapper(props) {
         labels,
         updateLabel,
         filteredEvents,
+        demos
       }}
     >
       {props.children}

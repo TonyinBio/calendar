@@ -1,24 +1,24 @@
 module.exports = (app) => {
-	const controller = require("../controllers/calendar.controller.js");
+	const demoController = require("../controllers/demo.controller.js");
 	const router = require("express").Router();
 
 	// Create a new Demo
-	router.post("/", controller.createDemo);
+	router.post("/", demoController.createDemo);
 
 	// Retrieve all Demos
-	router.get("/", controller.findAll);
+	router.get("/", demoController.findAll);
     
 	// Retrieve all available Demos
-	router.get("/available", controller.findAllAvailable);
+	router.get("/available", demoController.findAllAvailable);
     
 	// Update a Demo with id
-	router.put("/:id", controller.updateDemo);
+	router.put("/:id", demoController.updateDemo);
     
 	// Delete a Demo with id
-	router.delete("/:id", controller.deleteDemo);
+	router.delete("/:id", demoController.deleteDemo);
     
 	// Delete all Demos
-	router.delete("/", controller.deleteAll);
+	router.delete("/", demoController.deleteAll);
     
 	app.use("/api/demos", router);
 };
